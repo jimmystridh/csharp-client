@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -42,7 +43,7 @@ namespace BitPayAPI
 	    /// <returns>A BitPay server populated Invoice object.</returns>
         /// <exception cref="BitPayAPI.BitPayException">Handles only errors that occur in the returned data.
         /// Does not handle programming or communication errors.</exception>
-        public Invoice createInvoice(double price, string currency)
+        public Invoice createInvoice(decimal price, string currency)
         {
 		    if(currency.Length > 3) {
 			    throw new ArgumentException("Must be a valid currency code");
@@ -68,7 +69,7 @@ namespace BitPayAPI
         /// <returns>A BitPay server populated Invoice object.</returns>
         /// <exception cref="BitPayAPI.BitPayException">Handles only errors that occur in the returned data.
         /// Does not handle programming or communication errors.</exception>
-        public Invoice createInvoice(double price, string currency, InvoiceParams parameters)
+        public Invoice createInvoice(decimal price, string currency, InvoiceParams parameters)
         {
             if (currency.Length > 3)
             {
@@ -125,10 +126,10 @@ namespace BitPayAPI
         /// <param name="price">The invoice price.</param>
         /// <param name="currency">The invoice currency.</param>
         /// <returns>A list of key/value pairs.</returns>
-	    private Dictionary<string, string> getParams(double price, String currency)
+	    private Dictionary<string, string> getParams(decimal price, String currency)
         {
             Dictionary<string, string> parameters = new Dictionary<string, string>();
-		    parameters.Add("price", price + "");
+		    parameters.Add("price", price.ToString(CultureInfo.InvariantCulture));
 		    parameters.Add("currency", currency);
 		    return parameters;
 	    }
@@ -140,7 +141,7 @@ namespace BitPayAPI
         /// <param name="currency">The invoice currency.</param>
         /// <param name="optionalParams">A populated InvoiceParams object.</param>
         /// <returns>A list of key/value pairs.</returns>
-        private Dictionary<string, string> getParams(double price, string currency, InvoiceParams invoiceParams)
+        private Dictionary<string, string> getParams(decimal price, string currency, InvoiceParams invoiceParams)
         {
             var parameters = invoiceParams.getDictionary();
             parameters.Add("price", price.ToString());
