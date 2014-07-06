@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 
 namespace BitPayAPI
 {
@@ -80,8 +81,8 @@ namespace BitPayAPI
             this.id = (string)obj.id;
             this.url = (string)obj.url;
             this.status = (string)obj.status;
-            this.btcPrice = Convert.ToDouble(obj.btcPrice);
-            this.price = Convert.ToDouble(obj.price);
+            this.btcPrice = Convert.ToDouble(obj.btcPrice, CultureInfo.InvariantCulture);
+            this.price = Convert.ToDouble(obj.price, CultureInfo.InvariantCulture);
             this.currency = (string)obj.currency;
 	    }
 
