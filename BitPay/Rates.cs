@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Web.Helpers;
 
@@ -10,23 +11,22 @@ namespace BitPayAPI
     /// </summary>
     public class Rates
     {
-        private BitPay _bp;
-        private List<Rate> _rates;
+        private readonly BitPay _bitPay;
 
         /// <summary>
         /// Constructor.  Creates the Rates instance from the BitPay server response.
         /// </summary>
         /// <param name="response">The raw HTTP response from BitPay server api/rates call.</param>
-        /// <param name="bp">bp - used to update self.</param>
-        public Rates(HttpContent response, BitPay bp)
+        /// <param name="bitPay">used to update self.</param>
+        public Rates(HttpContent response, BitPay bitPay)
         {
             dynamic obj = Json.Decode(response.ReadAsStringAsync().Result);
-            this._bp = bp;
+            _bitPay = bitPay;
 
-            _rates = new List<Rate>();
+            ExchangeRates = new List<Rate>();
             foreach (dynamic rateObj in obj)
             {
-                _rates.Add(new Rate(rateObj.name, rateObj.code, rateObj.rate));
+                ExchangeRates.Add(new Rate(rateObj.name, rateObj.code, rateObj.rate));
             }
         }
 
@@ -34,17 +34,14 @@ namespace BitPayAPI
         /// Bitcoin exchange rates in a list.
         /// </summary>
         /// <returns>A list of Rate objects.</returns>
-	    public List<Rate> getRates()
-        {
-		    return _rates;
-	    }
+        public List<Rate> ExchangeRates { get; private set; }
 
 	    /// <summary>
         /// Updates the exchange rates from the BitPay API.
 	    /// </summary>
-	    public void update()
+	    public void Update()
         {
-		    _rates = _bp.getRates().getRates();
+		    ExchangeRates = _bitPay.GetRates().ExchangeRates;
 	    }
 
         /// <summary>
@@ -53,18 +50,15 @@ namespace BitPayAPI
         /// </summary>
         /// <param name="currencyCode">Three letter currency code in all caps.</param>
         /// <returns>The exchange rate.</returns>
-        public decimal getRate(string currencyCode)
+        public decimal GetRate(string currencyCode)
         {
-		    decimal val = 0;
-		    foreach (Rate rateObj in _rates)
+            var rate = ExchangeRates.FirstOrDefault(r => r.Code == currencyCode);
+            if (rate == null)
             {
-			    if (rateObj.getCode().Equals(currencyCode))
-                {
-                    val = rateObj.getRate();
-                    break;
-			    }
-		    }
-    		return val;
-	    }
+                return 0;
+            }
+
+            return rate.ExchangeRate;
+        }
     }
 }

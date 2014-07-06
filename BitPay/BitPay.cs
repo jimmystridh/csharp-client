@@ -13,25 +13,18 @@ namespace BitPayAPI
     /// </summary>
     public class BitPay
     {
-        private static readonly string BASE_URL = "https://bitpay.com/api/";
-	
-	    private string apiKey;
-	    private HttpClient client;
-	    private string auth;
+        private const string BaseUrl = "https://bitpay.com/api/";
+
+	    private readonly HttpClient _client;
+	    private readonly string _auth;
 
         /// <summary>
         /// Constructor. Baselines the API key and currencies for all invoices created using this instance.
         /// </summary>
         /// <param name="apiKey">Your API access key as defined at https://bitpay.com/api-keys. </param>
-        /// <param name="currency">This is the currency code set for the price setting.  The pricing currencies
-        /// currently supported are USD, EUR, BTC, and all of the codes listed on this page:
-        /// https://bitpay.com/bitcoin­exchange­rates. </param>
 	    public BitPay(string apiKey) {
-		    this.apiKey = apiKey;
-            byte[] encodedByte = System.Text.ASCIIEncoding.ASCII.GetBytes(this.apiKey + ": ");
-            this.auth = Convert.ToBase64String(encodedByte);
-		    client = new HttpClient();
-            client.BaseAddress = new Uri(BASE_URL);
+            _auth = Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes(apiKey + ": "));
+		    _client = new HttpClient {BaseAddress = new Uri(BaseUrl)};
 	    }
 
 	    /// <summary>
@@ -40,81 +33,85 @@ namespace BitPayAPI
 	    /// <param name="price">This is the amount that is required to be collected from the buyer. Note, if this
         /// is specified in a currency other than BTC, the price will be converted into BTC at market exchange
         /// rates to determine the amount collected from the buyer.</param>
+        /// <param name="currency">This is the currency code set for the price setting.  The pricing currencies
+        /// currently supported are USD, EUR, BTC, and all of the codes listed on this page:
+        /// https://bitpay.com/bitcoin­exchange­rates. </param>
 	    /// <returns>A BitPay server populated Invoice object.</returns>
         /// <exception cref="BitPayAPI.BitPayException">Handles only errors that occur in the returned data.
         /// Does not handle programming or communication errors.</exception>
-        public Invoice createInvoice(decimal price, string currency)
+        public Invoice CreateInvoice(decimal price, string currency)
         {
 		    if(currency.Length > 3) {
 			    throw new ArgumentException("Must be a valid currency code");
 		    }
 
-            var content = new FormUrlEncodedContent(this.getParams(price, currency));
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", this.auth);
-            client.DefaultRequestHeaders.Add("X-BitPay-Plugin-Info", "CSharplib");
+            var content = new FormUrlEncodedContent(getParams(price, currency));
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", _auth);
+            _client.DefaultRequestHeaders.Add("X-BitPay-Plugin-Info", "CSharplib");
 
-            var result = client.PostAsync("invoice", content).Result;
+            var result = _client.PostAsync("invoice", content).Result;
             HttpContent response = result.Content;
 
-            return createInvoiceObjectFromResponse(response);
+            return CreateInvoiceObjectFromResponse(response);
 	    }
 
-	    /// <summary>
+        /// <summary>
         /// Creates an invoice using the BitPay Payment Gateway API.
-	    /// </summary>
+        /// </summary>
         /// <param name="price">This is the amount that is required to be collected from the buyer. Note, if this
         /// is specified in a currency other than BTC, the price will be converted into BTC at market exchange
         /// rates to determine the amount collected from the buyer.</param>
+        /// <param name="currency">The currency to create the invoice in. See https://bitpay.com/bitcoin­exchange­rates for valid currencies.</param>
         /// <param name="parameters">Optional payment notification (IPN) parameters.</param>
         /// <returns>A BitPay server populated Invoice object.</returns>
         /// <exception cref="BitPayAPI.BitPayException">Handles only errors that occur in the returned data.
         /// Does not handle programming or communication errors.</exception>
-        public Invoice createInvoice(decimal price, string currency, InvoiceParams parameters)
+        public Invoice CreateInvoice(decimal price, string currency, InvoiceParams parameters)
         {
             if (currency.Length > 3)
             {
                 throw new ArgumentException("Must be a valid currency code");
             }
 
-            var content = new FormUrlEncodedContent(this.getParams(price, currency, parameters));
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", this.auth);
-            client.DefaultRequestHeaders.Add("X-BitPay-Plugin-Info", "CSharplib");
+            var content = new FormUrlEncodedContent(getParams(price, currency, parameters));
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", _auth);
+            _client.DefaultRequestHeaders.Add("X-BitPay-Plugin-Info", "CSharplib");
 
-            var result = client.PostAsync("invoice", content).Result;
+            var result = _client.PostAsync("invoice", content).Result;
             HttpContent response = result.Content;
 
-            return createInvoiceObjectFromResponse(response);
+            return CreateInvoiceObjectFromResponse(response);
         }
 
 	    /// <summary>
-	    /// Get an existing Invoice by it's Id. The Id is used in the url: "https://bitpay.com/invoice?id=<ID>".
+	    /// Get an existing Invoice by it's Id. The Id is used in the url: "https://bitpay.com/invoice?id=&lt;ID&gt;".
 	    /// </summary>
 	    /// <param name="invoiceId">The Id for the invoice to fetch from the BitPay server.</param>
 	    /// <returns>A BitPay server populated Invoice object.</returns>
         /// <exception cref="BitPayAPI.BitPayException">Handles only errors that occur in the returned data.
         /// Does not handle programming or communication errors.</exception>
-        public Invoice getInvoice(string invoiceId)
+        public Invoice GetInvoice(string invoiceId)
         {
-            string url = BASE_URL + "invoice/" + invoiceId;
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", this.auth);
-            client.DefaultRequestHeaders.Add("X-BitPay-Plugin-Info", "CSharplib");
+            string url = BaseUrl + "invoice/" + invoiceId;
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", _auth);
+            _client.DefaultRequestHeaders.Add("X-BitPay-Plugin-Info", "CSharplib");
 
-            var result = client.GetAsync(url).Result;
+            var result = _client.GetAsync(url).Result;
             HttpContent response = result.Content;
 
-            return createInvoiceObjectFromResponse(response);
+            return CreateInvoiceObjectFromResponse(response);
         }
 
 	    /// <summary>
         /// Get the current Bitcoin Exchange rates in dozens of currencies based on several exchanges.
 	    /// </summary>
 	    /// <returns>A BitPay server populated Rates object.</returns>
-        public Rates getRates()
+        public Rates GetRates()
         {
-            string url = BASE_URL + "rates";
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", this.auth);
+            const string url = BaseUrl + "rates";
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", _auth);
 
-            var result = client.GetAsync(url).Result;
+            var result = _client.GetAsync(url).Result;
             HttpContent response = result.Content;
 
             return new Rates(response, this);
@@ -126,12 +123,13 @@ namespace BitPayAPI
         /// <param name="price">The invoice price.</param>
         /// <param name="currency">The invoice currency.</param>
         /// <returns>A list of key/value pairs.</returns>
-	    private Dictionary<string, string> getParams(decimal price, String currency)
+	    private Dictionary<string, string> getParams(decimal price, string currency)
         {
-            Dictionary<string, string> parameters = new Dictionary<string, string>();
-		    parameters.Add("price", price.ToString(CultureInfo.InvariantCulture));
-		    parameters.Add("currency", currency);
-		    return parameters;
+            return new Dictionary<string, string>
+            {
+                {"price", price.ToString(CultureInfo.InvariantCulture)},
+                {"currency", currency}
+            };
 	    }
 
         /// <summary>
@@ -139,12 +137,12 @@ namespace BitPayAPI
         /// </summary>
         /// <param name="price">The invoice price.</param>
         /// <param name="currency">The invoice currency.</param>
-        /// <param name="optionalParams">A populated InvoiceParams object.</param>
+        /// <param name="invoiceParams">A populated InvoiceParams object.</param>
         /// <returns>A list of key/value pairs.</returns>
         private Dictionary<string, string> getParams(decimal price, string currency, InvoiceParams invoiceParams)
         {
-            var parameters = invoiceParams.getDictionary();
-            parameters.Add("price", price.ToString());
+            var parameters = invoiceParams.GetDictionary();
+            parameters.Add("price", price.ToString(CultureInfo.InvariantCulture));
             parameters.Add("currency", currency);
 		    return parameters;
 	    }
@@ -155,7 +153,7 @@ namespace BitPayAPI
         /// <param name="obj">Expected to be a JSON decoded object.</param>
         /// <param name="name">The name of a key in the JSON object.</param>
         /// <returns></returns>
-        private static bool dynamicObjectHasProperty(dynamic obj, string name)
+        private static bool DynamicObjectHasProperty(dynamic obj, string name)
         {
             Dictionary<string, object>.KeyCollection kc = obj.GetDynamicMemberNames();
             return kc.Contains(name);
@@ -168,10 +166,10 @@ namespace BitPayAPI
         /// <param name="response">The HTTP response object from the BitPay server when attempting to create
         /// an invoice.</param>
         /// <returns>A populated Inovice object.</returns>
-	    private Invoice createInvoiceObjectFromResponse(HttpContent response)
+	    private Invoice CreateInvoiceObjectFromResponse(HttpContent response)
         {
             dynamic obj = Json.Decode(response.ReadAsStringAsync().Result);
-            if (dynamicObjectHasProperty(obj, "error"))
+            if (DynamicObjectHasProperty(obj, "error"))
             {
                 throw new BitPayException("Error: " + obj.error.message);
             }

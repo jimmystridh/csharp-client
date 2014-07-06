@@ -8,236 +8,136 @@ namespace BitPayTest
     [TestClass]
     public class BitPayTest
     {
-        private BitPay bitpay;
-        private Invoice basicInvoice;
-        private static String API_KEY = "Your BitPay API Key";
-
-        public BitPayTest()
-        {
-            decimal price = 100.0m;
-            this.bitpay = new BitPay(API_KEY);
-            basicInvoice = this.bitpay.createInvoice(price, "USD");
-        }
-
+        private const string ApiKey = "Your BitPay API Key";
+        
         [TestMethod]
         public void testShouldGetInvoiceId()
         {
-            Assert.IsNotNull(basicInvoice.id, "Invoice created with id=NULL");
-        }
+            const decimal price = 100.0m;
+            var bitpay = new BitPay(ApiKey);
+            var basicInvoice = bitpay.CreateInvoice(price, "USD");
 
-        [TestMethod]
-        public void testShouldGetInvoiceURL()
-        {
-            Assert.IsNotNull(basicInvoice.url, "Invoice created with url=NULL");
-        }
-
-        [TestMethod]
-        public void testShouldGetInvoiceStatusL()
-        {
-            Assert.IsNotNull(basicInvoice.status, "Invoice created with status=NULL");
-        }
-
-        [TestMethod]
-        public void testShouldGetInvoiceBTCPrice()
-        {
-            Assert.IsNotNull(basicInvoice.btcPrice, "Invoice created with btcPrice=NULL");
+            Assert.IsNotNull(basicInvoice.Id, "Invoice created with id=NULL");
+            Assert.IsNotNull(basicInvoice.Url, "Invoice created with url=NULL");
+            Assert.IsNotNull(basicInvoice.Status, "Invoice created with status=NULL");
+            Assert.IsNotNull(basicInvoice.BtcPrice, "Invoice created with btcPrice=NULL");
         }
 
         [TestMethod]
         public void testShouldCreateInvoiceOneTenthBTC()
         {
-            try
-            {
-                // Arrange
-                decimal price = 0.1m;
-                decimal expected = 0.1m;
+            const decimal price = 0.1m;
 
-                // Act
-                this.bitpay = new BitPay(API_KEY);
-                Invoice invoice = this.bitpay.createInvoice(price, "BTC");
+            var bitpay = new BitPay(ApiKey);
+            Invoice invoice = bitpay.CreateInvoice(price, "BTC");
 
-                // Assert
-                decimal actual = invoice.btcPrice;
-                Assert.AreEqual(expected, actual, "Invoice not created correctly: 0.1BTC");
-            }
-            catch (BitPayException ex)
-            {
-                Assert.Fail(ex.getMessage());
-            }
+            Assert.AreEqual(price, invoice.BtcPrice, "Invoice not created correctly: 0.1BTC");
         }
 
         [TestMethod]
         public void testShouldCreateInvoice100USD()
         {
-            try
-            {
-                // Arrange
-                decimal price = 100.0m;
-                decimal expected = 100.0m;
+            const decimal price = 100.0m;
 
-                // Act
-                this.bitpay = new BitPay(API_KEY);
-                Invoice invoice = this.bitpay.createInvoice(price, "USD");
+            var bitpay = new BitPay(ApiKey);
+            Invoice invoice = bitpay.CreateInvoice(price, "USD");
 
-                // Assert
-                decimal actual = invoice.price;
-                Assert.AreEqual(expected, actual, "Invoice not created correctly: 100USD");
-            }
-            catch (BitPayException ex)
-            {
-                Assert.Fail(ex.getMessage());
-            }
+            Assert.AreEqual(price, invoice.Price, "Invoice not created correctly: 100USD");
         }
 
         [TestMethod]
-        public void testShouldCreateInvoice100EUR()
+        public void testShouldCreateInvoice10EUR()
         {
-            try
-            {
-                // Arrange
-                decimal price = 100.0m;
-                decimal expected = 100.0m;
+            const decimal price = 10.0m;
 
-                // Act
-                this.bitpay = new BitPay(API_KEY);
-                Invoice invoice = this.bitpay.createInvoice(price, "EUR");
+            var bitpay = new BitPay(ApiKey);
+            Invoice invoice = bitpay.CreateInvoice(price, "EUR");
 
-                // Assert
-                decimal actual = invoice.price;
-                Assert.AreEqual(expected, actual, "Invoice not created correctly: 100EUR");
-            }
-            catch (BitPayException ex)
-            {
-                Assert.Fail(ex.getMessage());
-            }
+            Assert.AreEqual(price, invoice.Price, "Invoice not created correctly: 10EUR");
         }
 
         [TestMethod]
         public void testShouldGetInvoice()
         {
-            try
-            {
-                // Arrange
-                decimal price = 100.0m;
+            const decimal price = 10.0m;
 
-                // Act
-                this.bitpay = new BitPay(API_KEY);
-                Invoice invoice = this.bitpay.createInvoice(price, "EUR");
-                Invoice retreivedInvoice = this.bitpay.getInvoice(invoice.id);
+            var bitpay = new BitPay(ApiKey);
+            Invoice invoice = bitpay.CreateInvoice(price, "EUR");
+            Invoice retreivedInvoice = bitpay.GetInvoice(invoice.Id);
 
-                // Assert
-                string expected = invoice.id;
-                string actual = retreivedInvoice.id;
-                Assert.AreEqual(expected, actual, "Expected invoice not retreived");
-            }
-            catch (BitPayException ex)
-            {
-                Assert.Fail(ex.getMessage());
-            }
+            Assert.AreEqual(invoice.Id, retreivedInvoice.Id, "Expected invoice not retreived");
         }
 
         [TestMethod]
         public void testShouldCreateInvoiceWithAdditionalParams()
         {
-            try
+            const decimal price = 100.0m;
+            var parameters = new InvoiceParams
             {
-                // Arrange
-                decimal price = 100.0m;
-                InvoiceParams parameters = new InvoiceParams();
-                parameters.buyerName = "Satoshi";
-                parameters.buyerEmail = "satoshi@bitpay.com";
-                parameters.fullNotifications = true;
-                parameters.notificationEmail = "satoshi@bitpay.com";
+                BuyerName = "Satoshi",
+                BuyerEmail = "satoshi@bitpay.com",
+                FullNotifications = true,
+                NotificationEmail = "satoshi@bitpay.com"
+            };
+            var bitpay = new BitPay(ApiKey);
 
-                // Act
-                this.bitpay = new BitPay(API_KEY);
-                Invoice invoice = this.bitpay.createInvoice(price, "USD", parameters);
+            Invoice invoice = bitpay.CreateInvoice(price, "USD", parameters);
 
-                // Assert
-                Assert.IsNotNull(invoice, "Invoice not created");
-            }
-            catch (BitPayException ex)
-            {
-                Assert.Fail(ex.getMessage());
-            }
+            Assert.IsNotNull(invoice, "Invoice not created");
         }
 	
         [TestMethod]
         public void testShouldGetExchangeRates() 
         {
-            try
-            {
-                // Arrange
+            var bitpay = new BitPay(ApiKey);		
+                
+            Rates rates = bitpay.GetRates();		
 
-                // Act
-                this.bitpay = new BitPay(API_KEY);		
-                Rates rates = this.bitpay.getRates();		
-
-                // Assert
-                List<Rate> listRates = rates.getRates();
-                Assert.IsNotNull(listRates, "Exchange rates not retrieved");
-            }
-            catch (BitPayException ex)
-            {
-                Assert.Fail(ex.getMessage());
-            }
+            Assert.IsNotNull(rates.ExchangeRates, "Exchange rates not retrieved");
         }
 
         [TestMethod]
         public void testShouldGetUSDExchangeRate()
         {
-            // Arrange
+            var bitpay = new BitPay(ApiKey);		
+            Rates rates = bitpay.GetRates();
 
-            // Act
-            this.bitpay = new BitPay(API_KEY);		
-            Rates rates = this.bitpay.getRates();
+            decimal rate = rates.GetRate("USD");
 
-            // Assert
-            decimal rate = rates.getRate("USD");
             Assert.IsTrue(rate != 0, "Exchange rate not retrieved: USD");
         }
 	
         [TestMethod]
         public void testShouldGetEURExchangeRate()
         {
-            // Arrange
+            var bitpay = new BitPay(ApiKey);		
+            Rates rates = bitpay.GetRates();
 
-            // Act
-            this.bitpay = new BitPay(API_KEY);		
-            Rates rates = this.bitpay.getRates();
+            decimal rate = rates.GetRate("EUR");
 
-            // Assert
-            decimal rate = rates.getRate("EUR");
             Assert.IsTrue(rate != 0, "Exchange rate not retrieved: EUR");
         }
 	
         [TestMethod]
         public void testShouldGetCNYExchangeRate() 
         {
-            // Arrange
+            var bitpay = new BitPay(ApiKey);
+            Rates rates = bitpay.GetRates();
 
-            // Act
-            this.bitpay = new BitPay(API_KEY);
-            Rates rates = this.bitpay.getRates();
+            decimal rate = rates.GetRate("CNY");
 
-            // Assert
-            decimal rate = rates.getRate("CNY");
             Assert.IsTrue(rate != 0, "Exchange rate not retrieved: CNY");
         }
 	
         [TestMethod]
         public void testShouldUpdateExchangeRates() 
         {
-            // Arrange
-
-            // Act
-            this.bitpay = new BitPay(API_KEY);		
-            Rates rates = this.bitpay.getRates();		
-            rates.update();
+            var bitpay = new BitPay(ApiKey);		
+            Rates rates = bitpay.GetRates();		
+            
+            rates.Update();
 		
-            // Assert
-            List<Rate> listRates = rates.getRates();
-            Assert.IsNotNull(listRates, "Exchange rates not retrieved after update");
+            Assert.IsNotNull(rates.ExchangeRates, "Exchange rates not retrieved after update");
         }
     }
 }

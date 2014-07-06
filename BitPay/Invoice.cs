@@ -12,12 +12,12 @@ namespace BitPayAPI
         /// The unique id of the invoice assigned by bitpay.com.
         /// </summary>
         /// 
-        public string id { get; set; }
+        public string Id { get; set; }
 
         /// <summary>
         /// An https URL where the invoice can be viewed.
         /// </summary>
-        public string url { get; set; }
+        public string Url { get; set; }
 
         /// <summary>
         /// The current invoice status.
@@ -54,23 +54,23 @@ namespace BitPayAPI
         /// will make arrangements with the merchant regarding the funds (which can either be credited to the
         /// merchant account on another invoice, or returned to the buyer).
         /// </summary>
-        public string status { get; set; }
+        public InvoiceStatus Status { get; set; }
 
         /// <summary>
         /// The amount of bitcoins being requested for payment of this invoice (same as the price if the
         /// merchant set the price in BTC).
         /// </summary>
-        public decimal btcPrice { get; set; }
+        public decimal BtcPrice { get; set; }
 
         /// <summary>
         /// The price set by the merchant (in terms of the provided currency).
         /// </summary>
-        public decimal price { get; set; }
+        public decimal Price { get; set; }
 
         /// <summary>
         /// The 3 letter currency code in which the invoice was priced.
         /// </summary>
-        public string currency { get; set; }
+        public string Currency { get; set; }
 	
         /// <summary>
         /// Constructor.  Initializes the invoice object.
@@ -78,12 +78,17 @@ namespace BitPayAPI
         /// <param name="obj">A decoded JSON object.</param>
 	    public Invoice(dynamic obj)
         {
-            this.id = (string)obj.id;
-            this.url = (string)obj.url;
-            this.status = (string)obj.status;
-            this.btcPrice = Convert.ToDecimal(obj.btcPrice, CultureInfo.InvariantCulture);
-            this.price = Convert.ToDecimal(obj.price, CultureInfo.InvariantCulture);
-            this.currency = (string)obj.currency;
+            Id = (string)obj.id;
+            Url = (string)obj.url;
+            Status = InvoiceStatus.Unknown;
+            InvoiceStatus status;
+            if (Enum.TryParse((string) obj.status, true, out status))
+            {
+                Status = status;
+            }
+            BtcPrice = Convert.ToDecimal(obj.btcPrice, CultureInfo.InvariantCulture);
+            Price = Convert.ToDecimal(obj.price, CultureInfo.InvariantCulture);
+            Currency = (string)obj.currency;
 	    }
 
     }

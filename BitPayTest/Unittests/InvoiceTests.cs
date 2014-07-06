@@ -28,8 +28,24 @@ namespace BitPayTest.Unittests
 
             var invoice = new Invoice(d);
 
-            Assert.AreEqual(1.23,invoice.btcPrice);
-            Assert.AreEqual(2.34,invoice.price);
+            Assert.AreEqual(1.23,invoice.BtcPrice);
+            Assert.AreEqual(2.34,invoice.Price);
+        }
+
+        [TestMethod]
+        public void ctor_StatusProvided_ParsesCorrectly()
+        {
+            dynamic d = new ExpandoObject();
+            d.id = "";
+            d.url = "";
+            d.status = "new";
+            d.btcPrice = "1.23";
+            d.price = "2.34";
+            d.currency = "SEK";
+
+            var invoice = new Invoice(d);
+
+            Assert.AreEqual(InvoiceStatus.New,invoice.Status);
         }
     }
 }
