@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 
 namespace BitPayAPI
 {
@@ -59,12 +60,12 @@ namespace BitPayAPI
         /// The amount of bitcoins being requested for payment of this invoice (same as the price if the
         /// merchant set the price in BTC).
         /// </summary>
-        public double btcPrice { get; set; }
+        public decimal btcPrice { get; set; }
 
         /// <summary>
         /// The price set by the merchant (in terms of the provided currency).
         /// </summary>
-        public double price { get; set; }
+        public decimal price { get; set; }
 
         /// <summary>
         /// The 3 letter currency code in which the invoice was priced.
@@ -80,8 +81,8 @@ namespace BitPayAPI
             this.id = (string)obj.id;
             this.url = (string)obj.url;
             this.status = (string)obj.status;
-            this.btcPrice = Convert.ToDouble(obj.btcPrice);
-            this.price = Convert.ToDouble(obj.price);
+            this.btcPrice = Convert.ToDecimal(obj.btcPrice, CultureInfo.InvariantCulture);
+            this.price = Convert.ToDecimal(obj.price, CultureInfo.InvariantCulture);
             this.currency = (string)obj.currency;
 	    }
 
