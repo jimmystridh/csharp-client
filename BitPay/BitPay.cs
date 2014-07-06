@@ -39,7 +39,7 @@ namespace BitPayAPI
 	    /// <returns>A BitPay server populated Invoice object.</returns>
         /// <exception cref="BitPayAPI.BitPayException">Handles only errors that occur in the returned data.
         /// Does not handle programming or communication errors.</exception>
-        public Invoice CreateInvoice(decimal price, string currency)
+        public virtual Invoice CreateInvoice(decimal price, string currency)
         {
 		    if(currency.Length > 3) {
 			    throw new ArgumentException("Must be a valid currency code");
@@ -66,7 +66,7 @@ namespace BitPayAPI
         /// <returns>A BitPay server populated Invoice object.</returns>
         /// <exception cref="BitPayAPI.BitPayException">Handles only errors that occur in the returned data.
         /// Does not handle programming or communication errors.</exception>
-        public Invoice CreateInvoice(decimal price, string currency, InvoiceParams parameters)
+        public virtual Invoice CreateInvoice(decimal price, string currency, InvoiceParams parameters)
         {
             if (currency.Length > 3)
             {
@@ -90,7 +90,7 @@ namespace BitPayAPI
 	    /// <returns>A BitPay server populated Invoice object.</returns>
         /// <exception cref="BitPayAPI.BitPayException">Handles only errors that occur in the returned data.
         /// Does not handle programming or communication errors.</exception>
-        public Invoice GetInvoice(string invoiceId)
+        public virtual Invoice GetInvoice(string invoiceId)
         {
             string url = BaseUrl + "invoice/" + invoiceId;
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", _auth);
@@ -106,7 +106,7 @@ namespace BitPayAPI
         /// Get the current Bitcoin Exchange rates in dozens of currencies based on several exchanges.
 	    /// </summary>
 	    /// <returns>A BitPay server populated Rates object.</returns>
-        public Rates GetRates()
+        public virtual Rates GetRates()
         {
             const string url = BaseUrl + "rates";
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", _auth);
